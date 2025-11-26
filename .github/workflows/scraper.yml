@@ -1,0 +1,57 @@
+name: Streamwijzer Scraper
+
+on:
+  schedule:
+    # Draait dagelijks om 18:00 UTC (= 19:00 Nederlandse tijd in winter)
+    - cron: '0 18 * * *'
+  
+  # Handmatig triggeren via GitHub UI (voor testing)
+  workflow_dispatch:
+
+jobs:
+  scrape-and-process:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: 📥 Checkout code
+      uses: actions/checkout@v4
+    
+    - name: 🐍 Setup Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+        cache: 'pip'
+    
+    - name: 📦 Install dependencies
+      run: |
+        pip install -r requirements.txt
+    
+    - name: 📥 Download previous seen articles
+      continue-on-error: true
+      uses: actions/download-artifact@v4
+      with:
+        name: seen-articles-latest
+    
+    - name: 🕷️ Run scraper
+      env:
+        WEBHOOK_URL: ${{ secrets.WEBHOOK_URL }}
+      run: |
+        python streamwijzer_scraper_automated.py
+    
+    - name: 💾 Save seen articles
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: seen-articles-latest
+        path: seen_articles.json
+        retention-days: 30
+        overwrite: true
+    
+    - name: 📊 Upload logs
+      if: failure()
+      uses: actions/upload-artifact@v4
+      with:
+        name: error-logs-${{ github.run_number }}
+        path: |
+          *.log
+          *.txt
