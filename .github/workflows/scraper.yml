@@ -1,0 +1,40 @@
+name: Streamwijzer Scraper
+
+on:
+  schedule:
+    # Draait dagelijks om 18:00 UTC (= 19:00 NL tijd in winter)
+    - cron: '0 18 * * *'
+  
+  # Optioneel: handmatig triggeren via GitHub UI
+  workflow_dispatch:
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+    
+    - name: Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+    
+    - name: Install dependencies
+      run: |
+        pip install requests beautifulsoup4
+    
+    - name: Run scraper
+      env:
+        WEBHOOK_URL: ${{ secrets.WEBHOOK_URL }}
+      run: |
+        python streamwijzer_scraper_automated.py
+    
+    - name: Upload seen_articles.json
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: seen-articles
+        path: seen_articles.json
+        retention-days: 90
