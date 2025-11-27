@@ -2,7 +2,7 @@ name: Streamwijzer Scraper
 
 on:
   schedule:
-    # Draait dagelijks om 18:00 UTC (= 19:00 Nederlandse tijd in winter)
+    # Draait dagelijks om 18:00 UTC (= 19:00 Nederlandse tijd in winter, 20:00 in zomer)
     - cron: '0 18 * * *'
   
   # Handmatig triggeren via GitHub UI (voor testing)
@@ -26,28 +26,22 @@ jobs:
       run: |
         pip install -r requirements.txt
     
-    - name: 📥 Download previous seen articles
-      continue-on-error: true
-      uses: actions/download-artifact@v4
-      with:
-        name: seen-articles-latest
-    
     - name: 🕷️ Run scraper
       env:
         WEBHOOK_URL: ${{ secrets.WEBHOOK_URL }}
       run: |
         python streamwijzer_scraper_automated.py
     
-    - name: 💾 Save seen articles
+    - name: 💾 Commit seen articles to repository
       if: always()
-      uses: actions/upload-artifact@v4
-      with:
-        name: seen-articles-latest
-        path: seen_articles.json
-        retention-days: 30
-        overwrite: true
+      run: |
+        git config --local user.email "github-actions[bot]@users.noreply.github.com"
+        git config --local user.name "github-actions[bot]"
+        git add seen_articles.json
+        git diff --quiet && git diff --staged --quiet || git commit -m "Update seen_articles.json [skip ci]"
+        git push
     
-    - name: 📊 Upload logs
+    - name: 📊 Upload logs on failure
       if: failure()
       uses: actions/upload-artifact@v4
       with:
@@ -55,3 +49,12 @@ jobs:
         path: |
           *.log
           *.txt
+        retention-days: 7
+    
+    - name: 📈 Upload seen articles as backup
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: seen-articles-backup-${{ github.run_number }}
+        path: seen_articles.json
+        retention-days: 7
