@@ -8,6 +8,9 @@ on:
   # Handmatig triggeren via GitHub UI (voor testing)
   workflow_dispatch:
 
+permissions:
+  contents: write  # Nodig om seen_articles.json te committen
+
 jobs:
   scrape-and-process:
     runs-on: ubuntu-latest
