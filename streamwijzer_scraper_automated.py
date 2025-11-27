@@ -32,6 +32,7 @@ def get_scheduled_times():
     
     scheduled_times = [
         today.strftime("%Y-%m-%d") + " 19:30:00",
+        today.strftime("%Y-%m-%d") + " 20:00:00",
         today.strftime("%Y-%m-%d") + " 20:45:00",
         tomorrow.strftime("%Y-%m-%d") + " 10:30:00",
         tomorrow.strftime("%Y-%m-%d") + " 11:45:00",
@@ -39,8 +40,7 @@ def get_scheduled_times():
         tomorrow.strftime("%Y-%m-%d") + " 14:00:00",
         tomorrow.strftime("%Y-%m-%d") + " 15:30:00",
         tomorrow.strftime("%Y-%m-%d") + " 17:00:00",
-        tomorrow.strftime("%Y-%m-%d") + " 18:30:00",
-        tomorrow.strftime("%Y-%m-%d") + " 20:00:00"
+        tomorrow.strftime("%Y-%m-%d") + " 18:30:00"
     ]
     
     return scheduled_times
